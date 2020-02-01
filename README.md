@@ -1,28 +1,36 @@
 # Nonparmetric Deconvolution Models (NDMs)
-(C) Copyright 2016-2018, Allison J.B. Chaney and Archit Verma
+(C) Copyright 2016-2020, Allison J.B. Chaney and Archit Verma
 
 This software is distributed under the MIT license.  See `LICENSE.txt` for details.
 
 #### Repository Contents
 - `dat` example data
-- `doc` JMLR paper LaTeX
+- `doc` paper LaTeX
 - `src` python source code
 
+## Dependencies
+We 
+
+```
+conda install h5py 
+pip install scipy sklearn-extensions matplotlib
+```
+
 ## Data
-This NDMs code reads in data from an [HDF5](https://support.hdfgroup.org/HDF5/whatishdf5.html) file.
-We provide `dat/GSE11058_trans.hdf5` as an example data set (obtained from (here)[http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE11058] and described in detail (here)[http://www.ncbi.nlm.nih.gov/pubmed/19568420]).  (TODO: add src/description of this data; and/or add a bunch of data and list it all here.)
+This NDM code reads in data from an [HDF5](https://support.hdfgroup.org/HDF5/whatishdf5.html) file.
+We provide `dat/voting/cal-precinct-prop-data.hdf5` as an example data set (obtained from (here)[https://github.com/datadesk/california-2016-election-precinct-maps] and described in detail (here)[https://www.latimes.com/projects/la-pol-ca-california-neighborhood-election-results/]).
 
 
 #### Converting Plain Text
-Since most real-world data are not stored in the HDF5 format, we provide the script `src/plain_to_hdf5.py` to convert plain text files into the required format.
+Since most real-world data are not stored in the HDF5 format, we provide the script `src/plain_to_hdf5.py` to help convert plain text files into the required format.
 It is used as follows.
 ```
 python src/plain_to_hdf5.py infile outfile [--delim DELIM]
 ```
 
-More concretely, imagine we have a comma-separated file `dat/GSE11058_trans.csv`.  To convert this, we run the following:
+More concretely, imagine we have a comma-separated file `dat/voting/cal-precinct-prop-data.csv`.  To convert this, we run the following:
 ```
-python src/plain_to_hdf5.py dat/GSE11058_trans.csv dat/GSE11058_trans.hdf5 --delim ','
+python src/plain_to_hdf5.py dat/voting/cal-precinct-prop-data.csv dat/voting/cal-precinct-prop-data.hdf5 --delim ','
 ```
 
 #### Simulating Data
@@ -34,19 +42,28 @@ As an alternative to real-world data, we can use `src/simulate.py` to simuate da
 |out|OUTDIR|output directory||
 |msg|MESSAGE|specify a log message||
 |seed|SEED|random seed|from time|
-|K|K|number of global latent components|10|
+|K|K|number of global latent factors|10|
 |N|N|number of observations|100|
-|P|P|number of features|10|
-|gbl_con|GBL_ALPHA|global concentration parameter|10.0|
-|lcl_con|LCL_ALPHA|local concentration parameter|1.0|
-|gbl_dist|BASE_DIST|base distribution for global factors, options: normal, multivariate_normal, log_normal, multivariate_log_normal, exponential, gamma, poisson|normal|
-|lcl_dist|BASE_DIST|distribution for local factors, options: normal, multivariate_normal, log_normal, multivariate_log_normal, exponential, gamma, poisson|normal|
-|glm_dist|GLM_DIST|distribution for generalized linear model at local level, options: normal, multivariate_normal, log_normal, multivariate_log_normal, exponential, gamma, poisson|normal|
-|glm_link|GLM_LINK|link function for generalized linear model at local level, options: identity, inverse, inversesquared, log, logit|identity|
+|M|M|number of obsevered features|10|
+|domain|DOMAIN|the domain of obsewrvations; one of: real, unit, positive, integer|real|
+|proc|PROCEDURE|which simulation procedure to use (1 through 5)|1|
 
+Example: `python src/simulate.py --out dat/sim_example`
 
-## Running NDMs
-TODO
+## Fitting an NDM
+To fit an NDM, use the `main.py` script; for example, with the simulated data we just created, we could run the following.
+```
+python src/main.py --data dat/sim_example/data.hdf5
+```
+
+main.py [-h] --data DATA [--out OUTDIR] [--msg MESSAGE]
+               [--save_freq SAVE_FREQ] [--save_all]
+               [--conv_thresh CONV_THRESH] [--min_iter MIN_ITER]
+               [--max_iter MAX_ITER] [--batch_max_iter BATCH_MAX_ITER]
+               [--tau TAU] [--kappa KAPPA] [--sample_size SAMPLE_SIZE]
+               [--seed SEED] [--cores CORES] [--K K] [--fix_K]
+               [--gbl_con GBL_ALPHA] [--lcl_con LCL_ALPHA] [--rho RHO]
+               [--dist F_DIST] [--link G_LINK]
 
 #### Options
 |Option|Arguments|Help|Default|
@@ -56,20 +73,22 @@ TODO
 |out|OUTDIR|output directory|out|
 |msg|MESSAGE|specify a log message||
 |save_freq|SAVE_FREQ|frequency of saving current status|10|
-|save_all||do not overwrite intermediate saved states |overwrite|
+|save_all||do not overwrite intermediate saved states|overwrite|
 |conv_thresh|CONV_THRESH|convergence threshold to stop fit|1e-4|
-|min_iter|MIN_ITER|minimum number of iterations|40|
+|min_iter|MIN_ITER|minimum number of iterations|25|
 |max_iter|MAX_ITER|maximum number of iterations|1000|
+|batch_max_iter|BATCH_MAX_ITER|maximum number of iterations per batch (nonparametric only)|20|
 |tau|TAU|stochastic gradient delay|1024|
 |kappa|KAPPA|stochastic gradient forgetting rate|0.7|
 |sample_size|SAMPLE_SIZE|stochastic gradient sample size|64|
 |seed|SEED|random seed|from time|
+|cores|CORES|number of cores to use|1|
+|K|K|initial (if nonparametric) or fixed K|10|
+|fix_K||flag to fix the number of latent components K|off/nonparametric/learned K|
 |gbl_con|GBL_ALPHA|global concentration parameter|1.0|
-|lcl_con|LCL_ALPHA|local concentration parameter|1.0|
-|gbl_dist|BASE_DIST|base distribution for global factors, options: normal, multivariate_normal, log_normal, mulitvariate_log_normal|normal|
-|lcl_dist|LCL_DIST|distribution for local factors, options: normal, multivariate_normal, log_normal, mulitvariate_log_normal|normal|
-|lcl_dist|GLM_DIST|distribution for generalized linear model at local level, options: normal, log_normal|normal|
-|lcl_link|GLM_LINK|link function for generalized linear model at local level, options: identity, inverse, inversesquared, log, logit|identity|
+|lcl_con|LCL_ALPHA|local concentration parameter|10.0|
+|rho|RHO|local counts prior|1.0|
+|dist|F_DIST|distribution f for observtions y; options: normal, log_normal, gamma, |link|G_LINK|link function for observations y; options: identity (default for normal, log_normal), exp, softplus (default for gamma, poisson), sigmoid (default for beta), expinverse (default for exponential)|depends on f distribution|
 
 ## Exploring Model Results
 TODO: describe visualization/exploration process
