@@ -39,13 +39,10 @@ class SimData:
             self.Sigma = invwishartrand(self.K, self.M, np.eye(self.M)/ \
                     (100000 if (proc >= 3) else 10000))
         elif domain == "positive" or domain == "integer":
-            #self.mu = np.random.normal(10, 10, (self.K, self.M))
             self.mu = np.random.normal(1000, 600, (self.K, self.M))
             self.Sigma = invwishartrand(self.K, self.M, np.eye(self.M))
         else:
-            #self.mu = np.random.normal(0, 10, (self.K, self.M))
-            #self.mu = np.random.normal(0, 100, (self.K, self.M)) #simk10
-            self.mu = np.random.normal(0, 1000, (self.K, self.M)) #simk50 and general sim
+            self.mu = np.random.normal(0, 1000, (self.K, self.M))
             self.Sigma = invwishartrand(self.K, self.M, np.eye(self.M))
 
     def transform(self, x): #inverse g
@@ -135,7 +132,6 @@ class SimData:
         f.create_dataset("global_factor_feature_covariance", data=self.Sigma)
         f.create_dataset("local_factor_concentration", data=self.pi)
         f.create_dataset("particle_counts", data=self.P)
-        #f.create_dataset("local_factor_features", data=self.transform(self.x_hat))
         f.create_dataset("observations", data=self.y)
 
         f.create_dataset("particle_features", data=self.x) # in the same space as observations
@@ -329,11 +325,11 @@ if __name__ == '__main__':
     # seed random number generator
     np.random.seed(args.seed)
 
-    print args.seed, args.outdir, args.domain, args.proc
+    print(args.seed, args.outdir, args.domain, args.proc)
 
     # create output dir (check if exists)
     if os.path.exists(args.outdir):
-        print "Output directory %s already exists.  Removing it to have a clean output directory!" % args.outdir
+        print("Output directory %s already exists.  Removing it to have a clean output directory!" % args.outdir)
         shutil.rmtree(args.outdir)
     os.makedirs(args.outdir)
 

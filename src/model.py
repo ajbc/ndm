@@ -299,7 +299,6 @@ class iWishartParameter(Parameter):
                 if self.df[k] > self.scale.shape[1] + 1:
                     rv[k] = self.scale[k] / (self.df[k] - self.scale.shape[1] - 1)
                 else:
-                    #print k, "sampling", self.df[k], self.scale.shape[1]
                     # no analytic solution, need to sample; this shouldn't happen frequently
                     samples = np.array([invwishartrand(self.df[k], self.scale[k]) for i in range(10000)])
                     rv[k] = np.mean(samples, 0)
@@ -476,7 +475,6 @@ class Model:
             trunc_obs = np.array(self.data.obs, dtype=np.float64)
             trunc_obs[trunc_obs < 1e-100] = 1e-100
             trunc_obs[trunc_obs > 1. - 1e-10] = 1. - 1e-10
-            print(np.min(trunc_obs), np.max(trunc_obs))
             self.data.transformed_obs = -np.log(1./trunc_obs - 1)
         elif self.settings.g_link == "expinverse":
             self.data.transformed_obs = np.log(self.data.obs ** -1)
@@ -794,23 +792,15 @@ class Model:
             logL = self.loglikelihood()
             rv = logL + \
                     logNormal(mu, self.model.mu_prior, self.model.sigma_prior.diagonal()**2).sum()
-            #print "mu     ", (rv - logL)
             if self.model.settings.fix_K:
                 rv += logDirichlet(beta, self.model.settings.gbl_alpha * np.ones(self.K))
                 rv += logDirichlet(pi, beta * self.model.settings.lcl_alpha).sum()
             else:
                 rv += logDPBeta(beta, self.model.settings.gbl_alpha)
-                #print "beta   ", logDPBeta(beta, self.model.settings.gbl_alpha)
-                #rv += logDPGamma(pi, beta * self.model.settings.lcl_alpha).sum()
-                #rv += logDirichlet(np.append(pi, np.ones(pi.shape[0])[:,np.newaxis] * 1e-6, axis=1), \
-                #        beta * self.model.settings.lcl_alpha).sum()
                 rv += logDirichlet(pi, beta * self.model.settings.lcl_alpha).sum()
-                #print "pi     ", logDirichlet(pi, beta * self.model.settings.lcl_alpha).sum()
-
             tmp = rv
             for k in range(self.K if self.model.settings.fix_K else self.K + 1):
                 rv += logiWishart(Sigma[k], self.model.data.M, self.model.sigma_prior).sum()
-            #print "sigma  ", (rv-tmp)
 
             tmp_x = 0
             for n in range(self.model.data.N):
@@ -825,15 +815,11 @@ class Model:
                         rv += logPoisson(P[n], self.model.settings.rho[n]).sum()
                     else:
                         rv += logPoisson(P[n], self.model.settings.rho).sum()
-            #print "x      ", tmp_x
 
             # log q
             tmp = rv
             rv -= self.qbeta.logq() + self.qmu.logq() + self.qsigma.logq() + \
                     self.qpi.logq() + self.qx.logq() + self.qP.logq()
-            #print "-q     ", (rv-tmp)
-            #print "\t", (-self.qbeta.logq(), -self.qmu.logq(), -self.qsigma.logq(), \
-            #        -self.qpi.logq(), -self.qx.logq(), -self.qP.logq())
 
             return rv, logL
 
@@ -1037,9 +1023,6 @@ class Model:
             rho = (iter + 2**4) ** -0.5
             if self.model.settings.f_dist == "normal":
                 rho = (iter + 2**6) ** -0.5
-            print(rho)
-            #print(rho)
-
 
             # initialize MS for RMSProp
             if iter == 0 or self.reset_MS:
@@ -1187,8 +1170,6 @@ class Model:
             if not self.settings.fix_K and self.iteration != self.settings.max_iter:
                 print("split/merge")
 
-                #ELBO, logL = self.submodel.ELBO()
-                #print "current ELBO:\t%f" % ELBO
 
                 ## merge
                 # generate candidate merge pairs
@@ -1224,7 +1205,7 @@ class Model:
                     submodel.update()
 
                     merge_ELBO, merge_logL = submodel.ELBO()
-                    print(merge_ELBO, merge_logL)
+                    #print(merge_ELBO, merge_logL)
 
                     if merge_ELBO > ELBO:
                         ELBO = merge_ELBO
@@ -1257,11 +1238,8 @@ class Model:
                 for k in sorted(range(self.submodel.K), key=lambda x: np.random.random()):
                     submodel = self.Submodel(self, K=self.submodel.K+1, split=k)
                     submodel.update()
-                    #print "after update"
-                    #print submodel.qmu.loc
 
                     split_ELBO, split_logL = submodel.ELBO()
-                    print(split_ELBO, split_logL)
 
                     if split_ELBO > ELBO:
                         ELBO = split_ELBO
