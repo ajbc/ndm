@@ -79,7 +79,8 @@ python src/main.py --data dat/sim_example/data.hdf5
 |gbl_con|GBL_ALPHA|global concentration parameter|1.0|
 |lcl_con|LCL_ALPHA|local concentration parameter|10.0|
 |rho|RHO|local counts prior|1.0|
-|dist|F_DIST|distribution f for observtions y; options: normal, log_normal, gamma, |link|G_LINK|link function for observations y; options: identity (default for normal, log_normal), exp, softplus (default for gamma, poisson), sigmoid (default for beta), expinverse (default for exponential)|depends on f distribution|
+|dist|F_DIST|distribution f for observtions y; options: normal, log_normal, gamma, exponential, poisson, beta|normal|
+|link|G_LINK|link function for observations y; options: identity (default for normal, log_normal), exp, softplus (default for gamma, poisson), sigmoid (default for beta), expinverse (default for exponential)|depends on f distribution|
 
 ## Exploring Model Results
 To process multiple iterations of model fit parameters, use `collapse_model_results.py` in the `src` directory.  This script takes ones argument: the fit output directory.  It produces a single file named `collapsed_model_results.csv` which contains the fitted parameter values by iteration in long format.  This is primarily for use with very small datasets.
