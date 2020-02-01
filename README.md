@@ -9,7 +9,7 @@ This software is distributed under the MIT license.  See `LICENSE.txt` for detai
 - `src` python source code
 
 ## Dependencies
-We 
+We recommend starting with a fresh [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) and running the following to install the dependencies for this project. 
 
 ```
 conda install h5py 
@@ -18,7 +18,7 @@ pip install scipy sklearn-extensions matplotlib
 
 ## Data
 This NDM code reads in data from an [HDF5](https://support.hdfgroup.org/HDF5/whatishdf5.html) file.
-We provide `dat/voting/cal-precinct-prop-data.hdf5` as an example data set (obtained from (here)[https://github.com/datadesk/california-2016-election-precinct-maps] and described in detail (here)[https://www.latimes.com/projects/la-pol-ca-california-neighborhood-election-results/]).
+We provide `dat/voting/cal-precinct-prop-data.hdf5` as an example data set (obtained from [here]{https://github.com/datadesk/california-2016-election-precinct-maps) and described in detail [here](https://www.latimes.com/projects/la-pol-ca-california-neighborhood-election-results/]).
 
 
 #### Converting Plain Text
@@ -56,15 +56,6 @@ To fit an NDM, use the `main.py` script; for example, with the simulated data we
 python src/main.py --data dat/sim_example/data.hdf5
 ```
 
-main.py [-h] --data DATA [--out OUTDIR] [--msg MESSAGE]
-               [--save_freq SAVE_FREQ] [--save_all]
-               [--conv_thresh CONV_THRESH] [--min_iter MIN_ITER]
-               [--max_iter MAX_ITER] [--batch_max_iter BATCH_MAX_ITER]
-               [--tau TAU] [--kappa KAPPA] [--sample_size SAMPLE_SIZE]
-               [--seed SEED] [--cores CORES] [--K K] [--fix_K]
-               [--gbl_con GBL_ALPHA] [--lcl_con LCL_ALPHA] [--rho RHO]
-               [--dist F_DIST] [--link G_LINK]
-
 #### Options
 |Option|Arguments|Help|Default|
 |---|---|---|---|
@@ -84,34 +75,13 @@ main.py [-h] --data DATA [--out OUTDIR] [--msg MESSAGE]
 |seed|SEED|random seed|from time|
 |cores|CORES|number of cores to use|1|
 |K|K|initial (if nonparametric) or fixed K|10|
-|fix_K||flag to fix the number of latent components K|off/nonparametric/learned K|
+|fix_K||flag to fix the number of latent components K|off (nonparametric)|
 |gbl_con|GBL_ALPHA|global concentration parameter|1.0|
 |lcl_con|LCL_ALPHA|local concentration parameter|10.0|
 |rho|RHO|local counts prior|1.0|
-|dist|F_DIST|distribution f for observtions y; options: normal, log_normal, gamma, |link|G_LINK|link function for observations y; options: identity (default for normal, log_normal), exp, softplus (default for gamma, poisson), sigmoid (default for beta), expinverse (default for exponential)|depends on f distribution|
+|dist|F_DIST|distribution f for observtions y; options: normal, log_normal, gamma, exponential, poisson, beta|normal|
+|link|G_LINK|link function for observations y; options: identity (default for normal, log_normal), exp, softplus (default for gamma, poisson), sigmoid (default for beta), expinverse (default for exponential)|depends on f distribution|
 
 ## Exploring Model Results
-TODO: describe visualization/exploration process
-
 To process multiple iterations of model fit parameters, use `collapse_model_results.py` in the `src` directory.  This script takes ones argument: the fit output directory.  It produces a single file named `collapsed_model_results.csv` which contains the fitted parameter values by iteration in long format.  This is primarily for use with very small datasets.
 To similarly process simulation parameters into a long format for exploration, use `reformat_simulation_parameters.py`, which takes one argument (the original HDF5 file); this script produces a file named `simulation_parameters.csv` in the same directory as the source HDF5 file.
-The script `explore_parameters.R` can be used on these files to produce exploratory figures, as follows.
-```
-Rscript explore_parameters.R [collapsed model results] [optional: simulated parameters]
-```
-
-
-## Running an Experiment
-TODO: describe our evaluation/comparison model pipleine
-
-
-- Install dependencies for comparison methods: [Scikit-learn](http://scikit-learn.org/stable/install.html), [GSL](https://www.gnu.org/software/gsl/), [Armadillo](http://arma.sourceforge.net/download.html), [PyMC3](https://pymc-devs.github.io/pymc3/notebooks/getting_started.html#Installation), [Pandas](http://pandas.pydata.org/pandas-docs/stable/install.html)
-- From the `src` directory, run `./setup_experiments.sh` to download data and source code for comparison methods.
-- Also from the `src` directory, run `./run_experiments.sh K` with your choice of `K` to run a set of experiments.
-
-
-Current comparison methods:
-- kmeans.py
-- gap.py (gamma-poisson factorization)
-- pmf.py (probablistic matrix factorization)
-- nmf.py (non-negative matrix facorization)
