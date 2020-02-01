@@ -75,7 +75,7 @@ python src/main.py --data dat/sim_example/data.hdf5
 |seed|SEED|random seed|from time|
 |cores|CORES|number of cores to use|1|
 |K|K|initial (if nonparametric) or fixed K|10|
-|fix_K||flag to fix the number of latent components K|off/nonparametric/learned K|
+|fix_K||flag to fix the number of latent components K|off (nonparametric)|
 |gbl_con|GBL_ALPHA|global concentration parameter|1.0|
 |lcl_con|LCL_ALPHA|local concentration parameter|10.0|
 |rho|RHO|local counts prior|1.0|
